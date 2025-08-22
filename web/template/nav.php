@@ -86,9 +86,21 @@ $prefix = isset($prefix) ? $prefix : "";
             <span class="caret"></span>
           </a>
           <ul class="dropdown-menu" role="menu" id="profile-injection">
-            <script src="<?php echo $prefix . "template/profile.php?profile_csrf=" . $_SESSION[$OJ_NAME . '_' . 'profile_csrf'] . $loc; ?>"></script>
             <!--<li><a href="../navbar-fixed-top/">Fixed top</a></li>-->
           </ul>
+          <script src="<?php echo $prefix . "template/profile.php?profile_csrf=" . $_SESSION[$OJ_NAME . '_' . 'profile_csrf'] . $loc; ?>" id="profile"></script>
+          <script>
+            window.addEventListener("pageshow", function(event) {
+              if (event.persisted) {
+                var newProfileScript = document.createElement("script")
+                var oldProfileScript = document.getElementById("profile")
+                newProfileScript.src = oldProfileScript.src
+                newProfileScript.id = "profile"
+                oldProfileScript.parentNode.appendChild(newProfileScript)
+                oldProfileScript.parentNode.removeChild(oldProfileScript)
+              }
+            });
+          </script>
         </li>
       </ul>
       <!-- select language -->
