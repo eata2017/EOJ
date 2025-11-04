@@ -74,17 +74,16 @@ if (isset($_GET['search']) && trim($_GET['search']) != "") {
 	$filter_sql = " `problem_id`>='" . strval($pstart) . "' AND `problem_id`<'" . strval($pend) . "' ";
 }
 
-if (isset($_SESSION[$OJ_NAME . '_' . 'administrator'])) {  //all problems
+if (isset($_SESSION[$OJ_NAME . '_' . 'administrator']) || isset($_SESSION[$OJ_NAME . '_' . 'contest_creator']) || isset($_SESSION[$OJ_NAME . '_' . 'problem_editor'])) {  //all problems
 	$sql = "SELECT `problem_id`,`title`,`source`,`submit`,`accepted` FROM `problem` WHERE $filter_sql ";
 } else {  //page problems (not include in contests period)
 	$sql = "SELECT `problem_id`,`title`,`source`,`submit`,`accepted` FROM `problem` " .
-		"WHERE `defunct`='N' and $filter_sql AND `problem_id` NOT IN (
-		SELECT  `problem_id` 
-		FROM contest c
-			INNER JOIN  `contest_problem` cp ON c.`contest_id` = cp.`contest_id` " .
-		" AND c.`defunct` = 'N' AND c.`start_time` <= NOW()" .    // option style show all non-running contest
-		" AND c.`end_time` >  NOW() AND c.`private` = 1" .    // original style , hidden all private contest problems
-		")";
+		"WHERE `defunct`='N' and $filter_sql";
+	if ($OJ_HIDE_PROBLEMS)
+		$sql .= " AND `problem_id` NOT IN (SELECT  `problem_id` FROM contest c" .
+			" INNER JOIN  `contest_problem` cp ON c.`contest_id` = cp.`contest_id`" .
+			" AND c.`defunct` = 'N' AND c.`start_time` <= NOW()" .    // option style show all non-running contest
+			" AND c.`end_time` > NOW() AND c.`private` = 1 )";
 }
 
 $sql .= " ORDER BY `problem_id`";

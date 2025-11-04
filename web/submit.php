@@ -110,6 +110,27 @@ if (isset($_POST['id'])) {
   $id = intval($_POST['id']);
   $test_run = $id <= 0;
   $langmask = $OJ_LANGMASK;
+
+  if (isset($_SESSION[$OJ_NAME . '_' . 'administrator']) || isset($_SESSION[$OJ_NAME . '_' . 'contest_creator']) || isset($_SESSION[$OJ_NAME . '_' . 'problem_editor'])) {
+    $sql = "SELECT * FROM `problem` WHERE `problem_id`=?";
+  } else {
+    $sql = "SELECT * FROM `problem` WHERE `problem_id`=? AND `defunct`='N'";
+    if ($OJ_HIDE_PROBLEMS) {
+      $sql .= " AND `problem_id` NOT IN (SELECT `problem_id` FROM `contest_problem`" .
+        " WHERE `contest_id` IN (SELECT `contest_id` FROM `contest`" .
+        " WHERE `end_time`> NOW() AND `start_time` <= NOW() AND `private` = 1))";
+    }
+  }
+  $result = mysql_query_cache($sql, $id);
+  if (count($result) != 1) {
+    $view_swal = $MSG_NOT_EXISTED;
+    if (isset($_REQUEST['ajax'])) {
+      echo $view_swal;
+    } else {
+      require "template/error.php";
+    }
+    exit(0);
+  }
 } else if (isset($_POST['pid']) && isset($_POST['cid']) && $_POST['cid'] != 0) {
   $pid = intval($_POST['pid']);
   $cid = intval($_POST['cid']);

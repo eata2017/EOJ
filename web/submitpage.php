@@ -38,13 +38,16 @@ if (isset($_GET['id'])) {
 	$id = intval($_GET['id']);
 	$problem_id = $id;
 	$sample_sql = "SELECT sample_input,sample_output,problem_id FROM problem WHERE problem_id = ?";
-	if (isset($_SESSION[$OJ_NAME . '_' . 'administrator']) || isset($_SESSION[$OJ_NAME . '_' . 'contest_creator']) || isset($_SESSION[$OJ_NAME . '_' . 'problem_editor']))
+	if (isset($_SESSION[$OJ_NAME . '_' . 'administrator']) || isset($_SESSION[$OJ_NAME . '_' . 'contest_creator']) || isset($_SESSION[$OJ_NAME . '_' . 'problem_editor'])) {
 		$sql = "SELECT * FROM `problem` WHERE `problem_id`=?";
-	else
-		$sql = "SELECT * FROM `problem` WHERE `problem_id`=? AND `defunct`='N' AND `problem_id` NOT IN (
-			SELECT `problem_id` FROM `contest_problem` WHERE `contest_id` IN (
-				SELECT `contest_id` FROM `contest` WHERE `end_time`> now()
-				))";
+	} else {
+		$sql = "SELECT * FROM `problem` WHERE `problem_id`=? AND `defunct`='N'";
+		if ($OJ_HIDE_PROBLEMS) {
+			$sql .= " AND `problem_id` NOT IN (SELECT `problem_id` FROM `contest_problem`" .
+				" WHERE `contest_id` IN (SELECT `contest_id` FROM `contest`" .
+				" WHERE `end_time`> NOW() AND `start_time` <= NOW() AND `private` = 1))";
+		}
+	}
 	$result = pdo_query($sql, $id);
 	if (count($result) != 1) {
 		$view_swal = $MSG_NO_SUCH_PROBLEM;
