@@ -155,6 +155,19 @@ $sql = "select user_id from privilege where rightstr=? LIMIT 1";
 $result = mysql_query_cache($sql, "p" . $id);
 $creator = count($result) ? $result[0][0] : "admin";
 
+
+$llm_ok = false;
+if ($OJ_LLM_API_KEY != "") {
+	if (
+		$_SESSION[$OJ_NAME . '_' . 'allow_view']
+		|| isset($_SESSION[$OJ_NAME . '_' . 'source_browser'])
+		|| isset($_SESSION[$OJ_NAME . '_' . 'administrator'])
+		|| isset($_SESSION[$OJ_NAME . '_' . 'contest_creator'])
+		|| isset($_SESSION[$OJ_NAME . '_' . 'problem_editor'])
+	)
+		$llm_ok = true;
+}
+
 require("template/problem.php");
 
 if (file_exists('./include/cache_end.php'))

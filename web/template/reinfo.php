@@ -103,24 +103,7 @@
 
   <script>
     MicroModal.init();
-    var llmText = "";
     var rendered = false;
-
-    function show_result() {
-      let timeout;
-      const showLlmResultOriginal = function() {
-        let llmResponseDiv = document.getElementById("llm-response");
-        llmResponseDiv.innerHTML = llmText;
-      };
-      return function() {
-        const context = this;
-        const args = arguments;
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-          showLlmResultOriginal.apply(context, args);
-        }, 500);
-      };
-    }
 
     function go_render_ana(rid) {
       if (!rendered) {
@@ -128,10 +111,9 @@
           withCredentials: true,
         });
         evtSource.onmessage = function(event) {
-          let llmResponseDiv = document.getElementById("llm-response");
+          let llmDiv = document.getElementById("llm-response");
           if (event.data === "[DONE]") {
-            llmText += "<br><br>Powered by " + "<?php echo $OJ_LLM_MODEL ?>" + ".";
-            show_result().call();
+            llmDiv.innerHTML += "<br><br>Powered by " + "<?php echo $OJ_LLM_MODEL ?>" + ".";
             evtSource.close();
             return;
           }
@@ -140,8 +122,7 @@
           if (!text) return;
           $("#loading").hide();
           text = text.replace(/\n/g, "<br>");
-          llmText += text;
-          show_result().call();
+          llmDiv.innerHTML += text;
         };
         rendered = true;
       }

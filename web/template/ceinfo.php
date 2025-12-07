@@ -8,13 +8,32 @@
   <meta name="description" content="">
   <meta name="author" content="<?php echo $OJ_NAME ?>">
   <link rel="shortcut icon" href="/favicon.ico">
-  <title><?php echo $id . " - " .$OJ_NAME ?></title>
+  <title><?php echo $id . " - " . $OJ_NAME ?></title>
   <?php include("template/css.php"); ?>
+  <style>
+    .modal__container,
+    .modal__content {
+      height: auto !important;
+      max-width: 500px !important;
+    }
+  </style>
 
   <link href='<?php echo $OJ_CDN_URL ?>template/prism.css' rel='stylesheet' type='text/css' />
 </head>
 
 <body>
+  <div class="modal micromodal-slide" id="modal-1" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+      <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
+        <main class="modal__content" id="modal-1-content">
+          <div id="center" class="table-responsive">
+            <div id="llm-response"></div>
+            <div class="fs-1 text-center" id="loading"><?php echo $MSG_LOADING ?></div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
 
   <div class="container">
     <?php include("template/nav.php"); ?>
@@ -69,6 +88,11 @@
             </tbody>
           </table>
         </div>
+        <?php if ($OJ_LLM_API_KEY != "") { ?>
+          <button class="btn btn-primary mt-4 mx-2" onclick="go_render_ana(<?php echo $id ?>)">
+            <?php echo $MSG_LLM_ANALYSIS ?>
+          </button>
+        <?php } ?>
       </div>
       <pre id='code' class="alert alert-error"><?php echo $view_reinfo ?></pre>
       <?php
@@ -88,6 +112,37 @@
   </div>
   <?php include("template/js.php"); ?>
   <script src='<?php echo $OJ_CDN_URL ?>template/prism.js' type='text/javascript'></script>
+  <script language="javascript" type="text/javascript" src="<?php echo $OJ_CDN_URL ?>template/micromodal.min.js"></script>
+
+  <script>
+    MicroModal.init();
+    var rendered = false;
+
+    function go_render_ana(rid) {
+      if (!rendered) {
+        const evtSource = new EventSource("llm_response.php?sid=" + rid, {
+          withCredentials: true,
+        });
+        evtSource.onmessage = function(event) {
+          let llmDiv = document.getElementById("llm-response");
+          if (event.data === "[DONE]") {
+            llmDiv.innerHTML += "<br><br>Powered by " + "<?php echo $OJ_LLM_MODEL ?>" + ".";
+            evtSource.close();
+            return;
+          }
+          let parsedData = JSON.parse(event.data);
+          let text = parsedData.choices[0].delta.content;
+          if (!text) return;
+          $("#loading").hide();
+          text = text.replace(/\n/g, "<br>");
+          llmDiv.innerHTML += text;
+        };
+        rendered = true;
+      }
+
+      MicroModal.show("modal-1");
+    }
+  </script>
 </body>
 
 </html>

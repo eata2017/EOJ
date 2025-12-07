@@ -15,6 +15,14 @@
 
 	<?php include("template/css.php"); ?>
 
+	<style>
+		.modal__container,
+		.modal__content {
+			height: auto !important;
+			max-width: 500px !important;
+		}
+	</style>
+
 	<link rel="stylesheet" href="<?php echo $OJ_CDN_URL . "katex/" ?>katex.min.css">
 	<script defer src="<?php echo $OJ_CDN_URL . "katex/" ?>katex.min.js"></script>
 	<script defer src="<?php echo $OJ_CDN_URL . "katex/" ?>contrib/auto-render.min.js"></script>
@@ -58,6 +66,19 @@
 
 
 <body>
+	<div class="modal micromodal-slide" id="modal-1" aria-hidden="true">
+		<div class="modal__overlay" tabindex="-1" data-micromodal-close>
+			<div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
+				<main class="modal__content" id="modal-1-content">
+					<div id="center" class="table-responsive">
+						<div id="llm-response"></div>
+						<div class="fs-1 text-center" id="loading"><?php echo $MSG_LOADING ?></div>
+					</div>
+				</main>
+			</div>
+		</div>
+	</div>
+
 	<div class="container">
 		<?php include("template/nav.php"); ?>
 
@@ -104,6 +125,9 @@
 							echo "<a class='btn btn-primary btn-sm' role='button' href=status.php?cid=$cid&problem_id=" . $PID[$pid] . ">$MSG_SUBMIT_NUM: " . $row['submit'] . "</a>";
 							echo "<a class='btn btn-primary btn-sm' role='button' href=problemstatus.php?cid=$cid&id=" . $PID[$pid] . ">$MSG_STATISTICS</a>";
 						}
+					}
+					if ($llm_ok) {
+						echo "<a class='btn btn-primary btn-sm' role='button' href='javascript:go_render_ana($id)'>$MSG_LLM_ANALYSIS</a>";
 					}
 					if (isset($_SESSION[$OJ_NAME . '_' . 'administrator']) || isset($_SESSION[$OJ_NAME . '_' . 'contest_creator']) || isset($_SESSION[$OJ_NAME . '_' . 'problem_editor'])) {
 						require_once("include/set_get_key.php");
@@ -319,6 +343,36 @@
 				$(elem).addClass("whitespace-nowrap")
 			}
 		})
+	</script>
+	<script language="javascript" type="text/javascript" src="<?php echo $OJ_CDN_URL ?>template/micromodal.min.js"></script>
+	<script>
+		MicroModal.init();
+		var rendered = false;
+
+		function go_render_ana(pid) {
+			if (!rendered) {
+				const evtSource = new EventSource("llm_response.php?pid=" + pid, {
+					withCredentials: true,
+				});
+				evtSource.onmessage = function(event) {
+					let llmDiv = document.getElementById("llm-response");
+					if (event.data === "[DONE]") {
+						llmDiv.innerHTML += "<br><br>Powered by " + "<?php echo $OJ_LLM_MODEL ?>" + ".";
+						evtSource.close();
+						return;
+					}
+					let parsedData = JSON.parse(event.data);
+					let text = parsedData.choices[0].delta.content;
+					if (!text) return;
+					$("#loading").hide();
+					text = text.replace(/\n/g, "<br>");
+					llmDiv.innerHTML += text;
+				};
+				rendered = true;
+			}
+
+			MicroModal.show("modal-1");
+		}
 	</script>
 	<?php if ($row["background"]) { ?>
 		<style>
