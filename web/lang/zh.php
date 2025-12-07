@@ -158,6 +158,8 @@ $MSG_BREAK_TIME = "您不应在10秒钟内提交超过1次的申请";
 $MSG_COPY_CURRENT = "复制当前";
 $MSG_WRITE_DIRECTLY = "直接填写";
 
+$MSG_LLM_ANALYSIS = "AI分析";
+
 //ranklist.php
 $MSG_Number = "名次";
 $MSG_NICK = "姓名";

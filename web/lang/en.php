@@ -159,6 +159,8 @@ $MSG_BREAK_TIME = "You should not submit more than twice in 1 seconds.";
 $MSG_COPY_CURRENT = "Copy Current Code";
 $MSG_WRITE_DIRECTLY = "Code Directly";
 
+$MSG_LLM_ANALYSIS = "AI Analysis";
+
 //ranklist.php
 $MSG_Number = "No.";
 $MSG_NICK = "Name";

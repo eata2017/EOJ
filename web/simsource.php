@@ -27,6 +27,14 @@ $sproblem_id = $row['problem_id'];
 $view_user_id = $suser_id = $row['user_id'];
 $sip = $row["ip"];
 
+if (
+  isset($_SESSION[$OJ_NAME . '_' . 'source_browser'])
+  || ($_SESSION[$OJ_NAME . '_' . "allow_view"]
+    && $suser_id == $_SESSION[$OJ_NAME . '_' . 'user_id'])
+) {
+  $ok = true;
+}
+
 $sql = "SELECT * FROM `source_code` WHERE `solution_id` = ?";
 $result = pdo_query($sql, $sid);
 $source = $result[0]["source"];

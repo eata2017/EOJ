@@ -8,6 +8,12 @@
   <meta name="description" content="">
   <meta name="author" content="<?php echo $OJ_NAME ?>">
   <link rel="shortcut icon" href="/favicon.ico">
+  <style>
+    .modal__container, .modal__content {
+      height: auto!important;
+      max-width: 500px!important;
+    }
+  </style>
 
   <title><?php echo  $id . " - " . $OJ_NAME ?></title>
   <?php include("template/css.php"); ?>
@@ -15,6 +21,18 @@
 </head>
 
 <body>
+  <div class="modal micromodal-slide" id="modal-1" aria-hidden="true">
+    <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+      <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
+        <main class="modal__content" id="modal-1-content">
+          <div id="center" class="table-responsive">
+            <div id="llm-response"></div>
+            <div class="fs-1 text-center" id="loading"><?php echo $MSG_LOADING ?></div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
 
   <div class="container">
     <?php include("template/nav.php"); ?>
@@ -68,12 +86,53 @@
             </tbody>
           </table>
         </div>
+        <?php if ($OJ_LLM_API_KEY != "") { ?>
+          <button class="btn btn-primary mt-4 mx-2" onclick="go_render_ana(<?php echo $id ?>)">
+            <?php echo $MSG_LLM_ANALYSIS ?>
+          </button>
+        <?php } ?>
       </div>
+
       <pre id='code' class="alert alert-error"><?php echo $view_reinfo ?></pre>
     </div>
   </div>
 
   <?php include("template/js.php"); ?>
+  <script language="javascript" type="text/javascript" src="<?php echo $OJ_CDN_URL ?>template/micromodal.min.js"></script>
+
+  <script>
+    MicroModal.init();
+    var rendered = false;
+
+    function go_render_ana(rid) {
+      if (!rendered) {
+        const evtSource = new EventSource("llm_response.php?sid=" + rid, {
+          withCredentials: true,
+        });
+        // handle llm response
+        evtSource.onmessage = function(event) {
+          let llmResponseDiv = document.getElementById("llm-response");
+          if (event.data === "[DONE]") {
+            document.getElementById("loading").style.display = "none";
+            evtSource.close();
+            let llmName = "<?php echo $OJ_LLM_MODEL ?>";
+            llmResponseDiv.innerHTML += "<br><br>Powered by " + llmName + ".";
+            return;
+          }
+
+          let parsedData = JSON.parse(event.data);
+          let text = parsedData.choices[0].delta.content;
+          if (!text) return;
+          $("#loading").hide();
+          text = text.replace(/\n/g, "<br>");
+          llmResponseDiv.innerHTML += text;
+        };
+        rendered = true;
+      }
+
+      MicroModal.show("modal-1");
+    }
+  </script>
 </body>
 
 </html>

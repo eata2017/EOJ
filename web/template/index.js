@@ -884,7 +884,6 @@ function setAD(url, href, ft) {
             directionX = 1;
             moveX = (width - imgWidth);
         }
-        console.log(moveX, moveY)
         requestAnimationFrame(changePos)
     }
 
