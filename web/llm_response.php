@@ -53,7 +53,10 @@ if ($sid) {
     $result = pdo_query($sql, $sid);
     $ceinfo = count($result) > 0 ? $result[0]["error"] : "";
 
-    if ($suser_id != $_SESSION[$OJ_NAME . '_' . 'user_id']) {
+    if (
+        !isset($_SESSION[$OJ_NAME . '_' . 'source_browser'])
+        && $suser_id != $_SESSION[$OJ_NAME . '_' . 'user_id']
+    ) {
         $ok = false;
     }
 
