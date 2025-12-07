@@ -211,7 +211,13 @@ $cache_key = 'llm_response_' . $sid . '_' . $pid . '_' . $OJ_LANG;
 if ($OJ_MEMCACHE) {
     $res = getCache($cache_key);
     if ($res !== false) {
-        echo $res;
+        $chunks = str_split($res, 256);
+        foreach ($chunks as $chunk) {
+            echo $chunk;
+            ob_flush();
+            flush();
+            usleep(100 * 1000);
+        }
         exit(0);
     }
 }
