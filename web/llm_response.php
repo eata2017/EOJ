@@ -80,7 +80,7 @@ the current logic cannot handle, or where the algorithm deviates from the correc
 algorithmic hint that guides the user toward the correct solution without giving it away.
 Frame it as a strategic question or a key concept to research.
 Focus your output ONLY on the following two sections:
-1. Critique: A brief, educational explanation of the error. 2. Hint: A guiding suggestion.
+A brief, educational explanation of the error, and a guiding suggestion.
 Respond in pure text format without any additional formatting or code blocks.
 Please respond in $output_lang.";
 

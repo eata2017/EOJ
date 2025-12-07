@@ -9,9 +9,10 @@
   <meta name="author" content="<?php echo $OJ_NAME ?>">
   <link rel="shortcut icon" href="/favicon.ico">
   <style>
-    .modal__container, .modal__content {
-      height: auto!important;
-      max-width: 500px!important;
+    .modal__container,
+    .modal__content {
+      height: auto !important;
+      max-width: 500px !important;
     }
   </style>
 
@@ -102,30 +103,45 @@
 
   <script>
     MicroModal.init();
+    var llmText = "";
     var rendered = false;
+
+    function show_result() {
+      let timeout;
+      const showLlmResultOriginal = function() {
+        let llmResponseDiv = document.getElementById("llm-response");
+        llmResponseDiv.innerHTML = llmText;
+      };
+      return function() {
+        const context = this;
+        const args = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          showLlmResultOriginal.apply(context, args);
+        }, 500);
+      };
+    }
 
     function go_render_ana(rid) {
       if (!rendered) {
         const evtSource = new EventSource("llm_response.php?sid=" + rid, {
           withCredentials: true,
         });
-        // handle llm response
         evtSource.onmessage = function(event) {
           let llmResponseDiv = document.getElementById("llm-response");
           if (event.data === "[DONE]") {
-            document.getElementById("loading").style.display = "none";
+            llmText += "<br><br>Powered by " + "<?php echo $OJ_LLM_MODEL ?>" + ".";
+            show_result().call();
             evtSource.close();
-            let llmName = "<?php echo $OJ_LLM_MODEL ?>";
-            llmResponseDiv.innerHTML += "<br><br>Powered by " + llmName + ".";
             return;
           }
-
           let parsedData = JSON.parse(event.data);
           let text = parsedData.choices[0].delta.content;
           if (!text) return;
           $("#loading").hide();
           text = text.replace(/\n/g, "<br>");
-          llmResponseDiv.innerHTML += text;
+          llmText += text;
+          show_result().call();
         };
         rendered = true;
       }
