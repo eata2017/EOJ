@@ -51,7 +51,8 @@ if (isset($_POST["do"])) {
               $ulist = "";
               if (count($pieces) > 0 && strlen($pieces[0]) > 0) {
                 for ($i = 0; $i < count($pieces); $i++) {
-                  $id_pw = explode(" ", trim($pieces[$i]));
+                  $id_pw = str_replace("\t", "", $pieces[$i]);
+                  $id_pw = explode(" ", trim($id_pw));
                   $id_pw[0] = preg_replace("/[^\x20-\x7e]/", " ", $id_pw[0]);
                   $id_pw[1] = preg_replace("/[^\x20-\x7e]/", " ", $id_pw[1]);
                   if (count($id_pw) != 2 and count($id_pw) != 3) {
